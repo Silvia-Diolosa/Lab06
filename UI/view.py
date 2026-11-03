@@ -13,33 +13,61 @@ class View(ft.UserControl):
         self._controller = None
         # graphical elements
         self._title = None
-        self.txt_name = None
-        self.btn_hello = None
         self.txt_result = None
         self.txt_container = None
 
     def load_interface(self):
         # title
-        self._title = ft.Text("Hello World", color="blue", size=24)
+        self._title = ft.Text("Analizza vendite", color="blue", size=24)
         self._page.controls.append(self._title)
 
-        #ROW with some controls
-        # text field for the name
-        self.txt_name = ft.TextField(
-            label="name",
-            width=200,
-            hint_text="Insert a your name"
-        )
+        #ROW 1
+        self.anno = ft.Dropdown(label="anno",
+                                options=[ft.dropdown.Option(key="None", text="Nessun filtro")],
+                                on_change=self._controller.selezionaAnno)# on change sul dropdown, scatta quando l’utente cambia la selezione del menu
+                                # quindi quando cambia chiamiamo questa funzione che legge il valore selezionato
+                                # solo il valore, su dropdown
+                                # Le singole voci della Dropdown non hanno un “cambiamento”: una voce non cambia mai, viene solo scelta o cliccata.
+                                # self.anno quindi prende il value che ottiene al momento di on_change
+                                # (self.anno ha una label, ha un valore (assegnato con on change), ha delle opzioni (assegnate funzione sotto)
+                                # Dropdown (il menu intero) ha lo stato value che cambia quando scegli una voce, e per questo esiste on_change.
+                                # Option (la singola voce) non ha uno stato che cambia. Può solo essere cliccata, e per questo ha on_click.
 
-        # button for the "hello" reply
-        self.btn_hello = ft.ElevatedButton(text="Hello", on_click=self._controller.handle_hello)
-        row1 = ft.Row([self.txt_name, self.btn_hello],
-                      alignment=ft.MainAxisAlignment.CENTER)
-        self._page.controls.append(row1)
+        #questo metodo è chiamato qui, e viene creato ed usato nel controller per popolare la dropdown (le option)
+        self._controller.mostraListaAnno()
+
+        self.brand = ft.Dropdown(label="brand",
+                                 options=[ft.dropdown.Option(key="None", text="Nessun filtro")],
+                                on_change=self._controller.selezionaBrand)
+        self._controller.mostraListaBrand()
+
+        self.retailer = ft.Dropdown(label="retailer",
+                        options=[ft.dropdown.Option(key="None", text="Nessun filtro", data=None, on_click=self._controller.selezionaRetailer)])
+                        # perchè qui usiamo on_click sulla Option (e sopra on_change su dropdown) ??
+                        # Con on_change sul menu dropdown si ha accesso solo a e.control.value, cioè alla chiave, e non all’oggetto
+                        # siccome qui stiamo usando un oggetto e non un semplice valore
+                        # on_change ti dice che la scelta è cambiata,
+                        # on_click ti dà quale voce è stata cliccata, con i suoi dati.
+                        # on_click è su ogni singola option, quindi quando clicchiamo su quell'option ce la salva
+        self._controller.mostraListaRetailer()
+
+        row1 = ft.Row([self.anno, self.brand, self.retailer], alignment=ft.MainAxisAlignment.CENTER)
+
+
+        #ROW 2
+        self.btnTopVendite = ft.ElevatedButton(text="Top vendite",
+                                               on_click=self._controller.topVendite)
+        self.btnAnalizzaVendite = ft.ElevatedButton(text="Analizza vendite",
+                                                    on_click=self._controller.analizzaVendite)
+
+        row2 = ft.Row([self.btnTopVendite, self.btnAnalizzaVendite], alignment=ft.MainAxisAlignment.CENTER)
+
+
+        self._page.add(row1, row2)
 
         # List View where the reply is printed
-        self.txt_result = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
-        self._page.controls.append(self.txt_result)
+        self.lvOut = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+        self._page.controls.append(self.lvOut)
         self._page.update()
 
     @property
